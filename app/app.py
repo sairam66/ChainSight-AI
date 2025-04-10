@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Load your inventory CSV
-data = pd.read_csv('../data/inventory_data.csv')
+data = pd.read_csv('./data/inventory_data.csv')
 
 # Title
 st.title("ChainSight AI - Inventory Dashboard")
