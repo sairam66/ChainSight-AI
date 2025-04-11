@@ -14,6 +14,7 @@ Welcome to **ChainSight AI**, your intelligent supply chain dashboard that helps
 st.divider()
 # Load your inventory CSV
 data = pd.read_csv('./data/inventory_data.csv')
+data.columns = data.columns.str.strip()  # This cleans any extra spaces in column names
 
 # --- KPI METRICS ---
 total_skus = data['Item'].nunique()
@@ -24,7 +25,13 @@ if 'Available Stock' in data.columns and 'Unit Cost' in data.columns:
     st.metric("Total Inventory Value", f"${inventory_value:,.2f}")
 else:
     st.warning("Skipping total value calculation. 'Available Stock' or 'Unit Cost' column not found.")
-inventory_value = total_value.sum()
+# Calculate Total Inventory Value
+if 'Available Stock' in data.columns and 'Unit Cost' in data.columns:
+    data['Total_Value'] = data['Available Stock'] * data['Unit Cost']
+    inventory_value = data['Total_Value'].sum()
+    st.metric("Total Inventory Value", f"${inventory_value:,.2f}")
+else:
+    st.warning("Skipping total value calculation. 'Available Stock' or 'Unit Cost' column not found.")
 out_of_stock = data[data['Stock Quantity'] == 0].shape[0]
 
 # --- Show metrics in columns ---
