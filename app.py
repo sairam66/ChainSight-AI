@@ -17,7 +17,12 @@ data = pd.read_csv('./data/inventory_data.csv')
 
 # --- KPI METRICS ---
 total_skus = data['Item'].nunique()
-total_value = data['Stock Quantity'] * data['Unit Price']
+# Check if the required columns exist for total value calculation
+if 'Current_Stock' in data.columns and 'Unit_Price' in data.columns:
+    data['Total_Value'] = data['Current_Stock'] * data['Unit_Price']
+    st.success("Total Value column successfully calculated.")
+else:
+    st.warning("Skipping total value calculation. 'Current_Stock' or 'Unit_Price' column not found.")
 inventory_value = total_value.sum()
 out_of_stock = data[data['Stock Quantity'] == 0].shape[0]
 
