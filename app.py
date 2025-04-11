@@ -16,7 +16,7 @@ st.divider()
 data = pd.read_csv('./data/inventory_data.csv')
 
 # --- KPI METRICS ---
-total_skus = data['Product'].nunique()
+total_skus = data['Product Name'].nunique()
 total_value = data['Stock Quantity'] * data['Unit Price']
 inventory_value = total_value.sum()
 out_of_stock = data[data['Stock Quantity'] == 0].shape[0]
