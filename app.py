@@ -17,14 +17,13 @@ data = pd.read_csv('./data/inventory_data.csv')
 
 # --- KPI METRICS ---
 total_skus = data['Item'].nunique()
-# Step 1: Calculate total value only if both columns exist
-if 'Current_Stock' in data.columns and 'Unit_Price' in data.columns:
-    data['Total_Value'] = data['Current_Stock'] * data['Unit_Price']
-    total_value = data['Total_Value']
-    inventory_value = total_value.sum()
+# Calculate Total Inventory Value using correct column names from your CSV
+if 'Available Stock' in data.columns and 'Unit Cost' in data.columns:
+    data['Total_Value'] = data['Available Stock'] * data['Unit Cost']
+    inventory_value = data['Total_Value'].sum()
     st.metric("Total Inventory Value", f"${inventory_value:,.2f}")
 else:
-    st.warning("Skipping total value and inventory metrics. Required columns not found.")
+    st.warning("Skipping total value calculation. 'Available Stock' or 'Unit Cost' column not found.")
 inventory_value = total_value.sum()
 out_of_stock = data[data['Stock Quantity'] == 0].shape[0]
 
