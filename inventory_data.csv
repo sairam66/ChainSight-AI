@@ -1,6 +1,0 @@
-Item,Current_Stock,Reorder_Level,Supplier,Days_Since_Last_Delivery
-Item A,120,100,Supplier X,5
-Item B,50,70,Supplier Y,12
-Item C,20,30,Supplier Z,20
-Item D,200,150,Supplier X,2
-Item E,80,90,Supplier Y,15
