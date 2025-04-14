@@ -14,6 +14,29 @@ if uploaded_file is not None:
         # Load and clean data
         data = pd.read_csv(uploaded_file)
         data.columns = data.columns.str.strip()  # Clean column names
+        # --- FILTERS ---
+st.subheader("🔍 Filter Inventory Data")
+
+# Filter by Category
+category_options = ['All'] + sorted(data['Category'].dropna().unique().tolist())
+selected_category = st.selectbox("Select Category", category_options)
+
+# Filter by Product
+product_options = ['All'] + sorted(data['Product'].dropna().unique().tolist())
+selected_product = st.selectbox("Select Product", product_options)
+
+# Apply filters
+filtered_data = data.copy()
+
+if selected_category != 'All':
+    filtered_data = filtered_data[filtered_data['Category'] == selected_category]
+
+if selected_product != 'All':
+    filtered_data = filtered_data[filtered_data['Product'] == selected_product]
+
+# Show filtered data
+st.write("### Filtered Inventory Data")
+st.dataframe(filtered_data)
 
         # Show raw data
         st.write("### Inventory Data", data)
