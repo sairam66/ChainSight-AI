@@ -1,62 +1,47 @@
 import streamlit as st
 import pandas as pd
 
-# --- UI HEADER ---
-st.set_page_config(page_title="ChainSight AI", page_icon=":package:", layout="wide")
+# Page setup
+st.set_page_config(page_title="ChainSight AI - Inventory", layout="wide")
+st.title("ChainSight AI - Inventory Dashboard")
+st.subheader("Smarter Supply Chain Insights for Small Businesses")
 
-st.title("ChainSight AI")
-st.subheader("Smarter Supply Chain Visibility for SMEs")
+# File uploader
+uploaded_file = st.file_uploader("Upload your inventory CSV file", type="csv")
 
-st.markdown("""
-Welcome to **ChainSight AI**, your intelligent supply chain dashboard that helps small and mid-sized businesses get real-time insights into their inventory performance, demand trends, and supplier health.  
-""")
+if uploaded_file is not None:
+    try:
+        # Load and clean data
+        data = pd.read_csv(uploaded_file)
+        data.columns = data.columns.str.strip()  # Clean column names
 
-st.divider()
-# Load your inventory CSV
-data = pd.read_csv('./data/inventory_data.csv')
-st.write("Columns in uploaded file:", data.columns.tolist())
-data.columns = data.columns.str.strip()  # This cleans any extra spaces in column names
+        # Show raw data
+        st.write("### Inventory Data", data)
+        st.write("Detected Columns:", data.columns.tolist())  # For debugging
 
-# --- KPI METRICS ---
-total_skus = data['Item'].nunique()
-# Calculate Total Inventory Value using correct column names from your CSV
-# Update these lines in your code:
+        # Calculate total inventory value and out-of-stock items
+        if 'Available_Stock' in data.columns and 'Unit_Cost' in data.columns:
+            data['Total_Value'] = data['Available_Stock'] * data['Unit_Cost']
+            total_inventory_value = data['Total_Value'].sum()
 
-if 'Available_Stock' in data.columns and 'Unit_Cost' in data.columns:
-    data['Total Value'] = data['Available_Stock'] * data['Unit_Cost']
+            out_of_stock_items = data[data['Available_Stock'] == 0]
+            out_of_stock_count = out_of_stock_items.shape[0]
+
+            # KPI Metrics
+            col1, col2 = st.columns(2)
+            col1.metric("Total Inventory Value", f"${total_inventory_value:,.2f}")
+            col2.metric("Out-of-Stock Items", out_of_stock_count)
+
+            # Show out-of-stock items
+            if out_of_stock_count > 0:
+                st.subheader("⚠️ Out-of-Stock Products")
+                st.dataframe(out_of_stock_items)
+
+        else:
+            st.warning("CSV must contain 'Available_Stock' and 'Unit_Cost' columns.")
+
+    except Exception as e:
+        st.error(f"An error occurred while processing the file: {e}")
+
 else:
-    st.warning("Skipping total value calculation. 'Available_Stock' or 'Unit_Cost' column not found.")
-# Also update this line:
-out_of_stock = data[data['Stock_Quantity'] == 0]
-
-# Calculate Total Inventory Value
-if 'Available Stock' in data.columns and 'Unit Cost' in data.columns:
-    data['Total_Value'] = data['Available Stock'] * data['Unit Cost']
-    inventory_value = data['Total_Value'].sum()
-    st.metric("Total Inventory Value", f"${inventory_value:,.2f}")
-else:
-    st.warning("Skipping total value calculation. 'Available Stock' or 'Unit Cost' column not found.")
-out_of_stock = data[data['Stock Quantity'] == 0].shape[0]
-
-# --- Show metrics in columns ---
-col1, col2, col3 = st.columns(3)
-
-col1.metric("Total Unique SKUs", total_skus)
-col2.metric("Total Inventory Value", f"${inventory_value:,.2f}")
-col3.metric("Out-of-Stock Items", out_of_stock)
-
-st.divider()
-
-# Show full inventory
-st.subheader("📦 Current Inventory Levels")
-st.dataframe(data)
-
-# Low Stock Alert
-low_stock = data[data['Current_Stock'] < data['Reorder_Level']]
-st.subheader("⚠️ Items Below Reorder Level")
-st.table(low_stock)
-
-# Supplier Delay Alert
-delayed_suppliers = data[data['Days_Since_Last_Delivery'] > 10]
-st.subheader("🚨 Suppliers With Delays")
-st.table(delayed_suppliers)
+    st.info("Please upload a CSV file to begin.")
