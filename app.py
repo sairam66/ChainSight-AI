@@ -13,21 +13,28 @@ if uploaded_file is not None:
     try:
         # Load and clean data
         data = pd.read_csv(uploaded_file)
-        data.columns = data.columns.str.strip()  # Clean column 
-        # Simple filters
-category = st.selectbox("Filter by Category", ['All'] + sorted(data['Category'].unique()))
-product = st.selectbox("Filter by Product", ['All'] + sorted(data['Product'].unique()))
+        data.columns = data.columns.str.strip()
+        try:
+    data = pd.read_csv(uploaded_file)
+    data.columns = data.columns.str.strip()
 
-# Apply filters
-filtered_data = data.copy()
-if category != 'All':
-    filtered_data = filtered_data[filtered_data['Category'] == category]
-if product != 'All':
-    filtered_data = filtered_data[filtered_data['Product'] == product]
+    # Simple filters
+    category = st.selectbox("Filter by Category", ['All'] + sorted(data['Category'].unique()))
+    product = st.selectbox("Filter by Product", ['All'] + sorted(data['Product'].unique()))
 
-# Show the filtered result
-st.write("Filtered Inventory Data")
-st.dataframe(filtered_data)
+    # Apply filters
+    filtered_data = data.copy()
+    if category != 'All':
+        filtered_data = filtered_data[filtered_data['Category'] == category]
+    if product != 'All':
+        filtered_data = filtered_data[filtered_data['Product'] == product]
+
+    # Show filtered data
+    st.write("Filtered Inventory Data")
+    st.dataframe(filtered_data)
+
+except Exception as e:
+    st.error(f"Something went wrong: {e}")
 
         # Show raw data
         st.write("### Inventory Data", data)
