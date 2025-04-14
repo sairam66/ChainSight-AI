@@ -9,6 +9,12 @@ st.subheader("Smarter Supply Chain Insights for Small Businesses")
 # File uploader
 uploaded_file = st.file_uploader("Upload your inventory CSV file", type="csv")
 
+if uploaded_file is not None:
+    try:
+        # Load and clean data
+        data = pd.read_csv(uploaded_file)
+        data.columns = data.columns.str.strip()  # Clean column names
+
         # Show raw data
         st.write("### Inventory Data", data)
         st.write("Detected Columns:", data.columns.tolist())  # For debugging
