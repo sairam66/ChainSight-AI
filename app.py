@@ -11,30 +11,31 @@ uploaded_file = st.file_uploader("Upload your inventory CSV file", type="csv")
 
 if uploaded_file is not None:
     try:
-        # Load and clean data
         data = pd.read_csv(uploaded_file)
         data.columns = data.columns.str.strip()
-        try:
-    data = pd.read_csv(uploaded_file)
-    data.columns = data.columns.str.strip()
 
-    # Simple filters
-    category = st.selectbox("Filter by Category", ['All'] + sorted(data['Category'].unique()))
-    product = st.selectbox("Filter by Product", ['All'] + sorted(data['Product'].unique()))
+        # --- FILTERS ---
+        category = st.selectbox("Filter by Category", ['All'] + sorted(data['Category'].unique()))
+        product = st.selectbox("Filter by Product", ['All'] + sorted(data['Product'].unique()))
 
-    # Apply filters
-    filtered_data = data.copy()
-    if category != 'All':
-        filtered_data = filtered_data[filtered_data['Category'] == category]
-    if product != 'All':
-        filtered_data = filtered_data[filtered_data['Product'] == product]
+        # Apply filters
+        filtered_data = data.copy()
+        if category != 'All':
+            filtered_data = filtered_data[filtered_data['Category'] == category]
+        if product != 'All':
+            filtered_data = filtered_data[filtered_data['Product'] == product]
 
-    # Show filtered data
-    st.write("Filtered Inventory Data")
-    st.dataframe(filtered_data)
+        # Show filtered data
+        st.write("Filtered Inventory Data")
+        st.dataframe(filtered_data)
 
-except Exception as e:
-    st.error(f"Something went wrong: {e}")
+        # (Optional) Add your KPI calculations here using filtered_data
+        # ...
+
+    except Exception as e:
+        st.error(f"Something went wrong: {e}")
+else:
+    st.info("Please upload a CSV file to begin.")
 
         # Show raw data
         st.write("### Inventory Data", data)
