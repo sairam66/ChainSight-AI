@@ -24,6 +24,10 @@ You can download a sample template [here](https://chainsight-ai.streamlit.app/in
 """)
 
 st.divider()
+# Set up page
+st.set_page_config(page_title="ChainSight AI - Inventory", layout="wide")
+st.title("ChainSight AI - Inventory Dashboard")
+st.subheader("Smarter Supply Chain Insights for Small Businesses")
 
 # Upload CSV
 uploaded_file = st.file_uploader("Upload your inventory CSV file", type="csv")
