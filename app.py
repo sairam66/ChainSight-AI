@@ -3,6 +3,28 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# --- App Config & Heading ---
+st.set_page_config(page_title="ChainSight AI", layout="wide")
+
+st.title("ChainSight AI")
+st.subheader("Smarter Inventory Analytics for Small & Mid-sized Businesses")
+
+st.markdown("""
+Welcome to **ChainSight AI**, a lightweight yet powerful inventory analytics tool.  
+Just upload your `.csv` file and get real-time visibility into stock levels, inventory value, and out-of-stock products.
+
+#### **CSV Format Required**:
+Make sure your CSV file includes the following columns:
+- `Product`
+- `Category`
+- `Available_Stock`
+- `Unit_Cost`
+
+You can download a sample template [here](https://chainsight-ai.streamlit.app/inventory_data.csv) or create your own using the same headers.
+""")
+
+st.divider()
+
 # Set up page
 st.set_page_config(page_title="ChainSight AI - Inventory", layout="wide")
 st.title("ChainSight AI - Inventory Dashboard")
