@@ -91,27 +91,86 @@ if uploaded_file is not None:
                 forecast_file = st.file_uploader("Upload Sales CSV (Date, Units_Sold)", type="csv", key="forecast")
 
 
-                if forecast_file is not None:
-                    try:
-                        df = pd.read_csv(forecast_file)
-                        df.columns = df.columns.str.strip()
-                        df['Date'] = pd.to_datetime(df['Date'])
-                        df.set_index('Date', inplace=True)
-                        df = df.asfreq('D').fillna(method='ffill')  # daily frequency
+                # Data upload and filtering section (existing code)
+st.title("Inventory Management System")
 
-                        st.subheader("Uploaded Sales Data")
-                        st.line_chart(df['Units_Sold'])
+# File upload
+uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    st.dataframe(df.head())  # Show the first few rows of the data
 
-                        model = SARIMAX(df['Units_Sold'], order=(1, 1, 1), seasonal_order=(1, 1, 1, 7))
-                        results = model.fit(disp=False)
+    # Process and filter data as needed (e.g., converting 'Date' to datetime, cleaning NaN values)
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    df = df.dropna(subset=['Date'])
+    df = df.sort_values('Date')
 
-                        forecast_steps = 15
-                        forecast = results.forecast(steps=forecast_steps)
+    # ----------------------------- Forecasting Section -----------------------------
+    st.markdown("## 📈 Demand Forecasting")
+    st.info("""
+    This section uses **SARIMAX** to forecast the next 6 months of inventory levels based on historical data.
 
-                        fig = go.Figure()
-                        fig.add_trace(go.Scatter(x=df.index, y=df['Units_Sold'], name="Actual"))
-                        future_dates = pd.date_range(df.index[-1] + pd.Timedelta(days=1), periods=forecast_steps)
-                        fig.add_trace(go.Scatter(x=future_dates, y=forecast, name="Forecast"))
-                        st.plotly_chart(fig, use_container_width=True)
+    ### How to Use:
+    - Make sure your uploaded file has at least 12 months of data.
+    - Required columns:
+      - `Date`: Must be in YYYY-MM-DD format
+      - `Product`: Product name or ID
+      - `Available_Stock`: Inventory level on that date
+    - Select a product from the dropdown to generate the forecast.
 
-                        st.metric("Forecasted Total Units (Next 15 Days)", int(forecast.sum()))
+    **Note:** If your data doesn’t have enough history (12+ months), the forecast won’t run.
+    """)
+
+    # Offer sample forecast template download
+    sample_data = pd.DataFrame({
+        "Date": pd.date_range(start="2023-01-01", periods=15, freq='M'),
+        "Product": ["Product A"] * 15,
+        "Available_Stock": [100, 120, 110, 130, 125, 140, 135, 150, 160, 170, 180, 190, 200, 210, 220]
+    })
+    sample_csv = sample_data.to_csv(index=False).encode('utf-8')
+    st.download_button("📄 Download Sample Forecast Template", sample_csv, "sample_forecast_template.csv", "text/csv")
+
+    # Forecasting logic
+    try:
+        if 'Date' in df.columns and 'Product' in df.columns and 'Available_Stock' in df.columns:
+            product_list = df['Product'].dropna().unique()
+            selected_product = st.selectbox("Select a product to forecast", product_list)
+
+            product_data = df[df['Product'] == selected_product].copy()
+            product_data['Date'] = pd.to_datetime(product_data['Date'], errors='coerce')
+            product_data.dropna(subset=['Date'], inplace=True)
+            product_data.set_index('Date', inplace=True)
+
+            # Group and resample by month
+            monthly_data = product_data['Available_Stock'].resample('M').sum()
+
+            if len(monthly_data) >= 12:
+                from statsmodels.tsa.statespace.sarimax import SARIMAX
+                import plotly.graph_objects as go
+
+                model = SARIMAX(monthly_data, order=(1, 1, 1), seasonal_order=(1, 1, 1, 12))
+                results = model.fit(disp=False)
+
+                forecast = results.get_forecast(steps=6)
+                forecast_df = forecast.conf_int()
+                forecast_df['Forecast'] = forecast.predicted_mean
+                forecast_df.index = pd.date_range(start=monthly_data.index[-1] + pd.DateOffset(months=1), periods=6, freq='M')
+
+                # Plotting
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=monthly_data.index, y=monthly_data, name='Historical'))
+                fig.add_trace(go.Scatter(x=forecast_df.index, y=forecast_df['Forecast'], name='Forecast'))
+                fig.add_trace(go.Scatter(x=forecast_df.index, y=forecast_df['upper Available_Stock'], name='Upper CI', line=dict(dash='dash')))
+                fig.add_trace(go.Scatter(x=forecast_df.index, y=forecast_df['lower Available_Stock'], name='Lower CI', line=dict(dash='dash')))
+                fig.update_layout(title="6-Month Inventory Forecast", xaxis_title="Date", yaxis_title="Available Stock")
+                st.plotly_chart(fig)
+
+                # Export forecast as CSV
+                csv = forecast_df.to_csv().encode('utf-8')
+                st.download_button("📥 Download Forecast CSV", data=csv, file_name='forecast.csv', mime='text/csv')
+            else:
+                st.warning("Not enough monthly data to forecast. Please upload at least 12 months of data.")
+        else:
+            st.warning("Dataset must contain 'Date', 'Product', and 'Available_Stock' columns.")
+    except Exception as e:
+        st.error(f"Error while generating forecast: {e}")
