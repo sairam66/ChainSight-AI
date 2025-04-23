@@ -93,6 +93,40 @@ if uploaded_file is not None:
                 }).sort_values('Total_Value', ascending=False)
                 st.dataframe(category_summary)
        st.dataframe(category_summary)
+                    # ─── Forecasting Module ─────────────────────────────────────
+        st.header("📈 Demand Forecasting (Beta)")
+        forecast_file = st.file_uploader(
+            "Upload Sales CSV (for ML Forecast)", type="csv", key="forecast"
+        )
+
+        if forecast_file is not None:
+            try:
+                df = pd.read_csv(forecast_file)
+                df.columns = df.columns.str.strip()
+                df["Date"] = pd.to_datetime(df["Date"])
+
+                st.subheader("Uploaded Sales Data")
+                st.dataframe(df)
+
+                df_prophet = df[["Date", "Units_Sold"]].rename(columns={"Date": "ds", "Units_Sold": "y"})
+
+                model = Prophet()
+                model.fit(df_prophet)
+
+                future = model.make_future_dataframe(periods=15)
+                forecast = model.predict(future)
+
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=forecast["ds"], y=forecast["yhat"], name="Forecast"))
+                fig.add_trace(go.Scatter(x=df_prophet["ds"], y=df_prophet["y"], name="Actual"))
+                st.plotly_chart(fig, use_container_width=True)
+
+                st.subheader("📊 Forecast Summary")
+                st.metric("Forecasted Total Units (Next 15 Days)", int(forecast["yhat"][-15:].sum()))
+
+            except Exception as e:
+                st.error(f"Error in forecasting: {e}")
+        # ─────────────────────────────────────────────────────────────
 
             # Data quality check
             st.subheader("Data Quality Check")
