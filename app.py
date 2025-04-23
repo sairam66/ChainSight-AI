@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from prophet import Prophet
-import plotly.graph_objects as go
 
 # --- App Config & Heading ---
 st.set_page_config(page_title="ChainSight AI", layout="wide")
@@ -92,7 +90,6 @@ if uploaded_file is not None:
                     'Total_Value': 'sum'
                 }).sort_values('Total_Value', ascending=False)
                 st.dataframe(category_summary)
-       st.dataframe(category_summary)
 
             # Data quality check
             st.subheader("Data Quality Check")
