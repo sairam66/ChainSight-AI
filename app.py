@@ -93,8 +93,8 @@ if uploaded_file is not None:
                 }).sort_values('Total_Value', ascending=False)
                 st.dataframe(category_summary)
        st.dataframe(category_summary)
-                    # ─── Forecasting Module ─────────────────────────────────────
-        st.header("📈 Demand Forecasting (Beta)")
+               # ─── Forecasting Module ─────────────────────────────────────
+       st.header("📈 Demand Forecasting (Beta)")
         forecast_file = st.file_uploader(
             "Upload Sales CSV (for ML Forecast)", type="csv", key="forecast"
         )
