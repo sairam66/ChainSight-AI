@@ -99,7 +99,7 @@ if uploaded_file is not None:
             "Upload Sales CSV (for ML Forecast)", type="csv", key="forecast"
         )
 
-        if forecast_file is not None:
+    if forecast_file is not None:
             try:
                 df = pd.read_csv(forecast_file)
                 df.columns = df.columns.str.strip()
