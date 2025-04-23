@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from prophet import Prophet
+import plotly.graph_objects as go
 
 # --- App Config & Heading ---
 st.set_page_config(page_title="ChainSight AI", layout="wide")
