@@ -110,3 +110,44 @@ if uploaded_file is not None:
         st.error(f"Error processing the file: {e}")
 else:
     st.info("Please upload a CSV file to begin.")
+
+from prophet import Prophet
+import plotly.graph_objects as go
+
+st.header("📈 Demand Forecasting (Beta)")
+
+# Upload forecasting-specific CSV
+forecast_file = st.file_uploader("Upload Sales CSV (for ML Forecast)", type="csv", key="forecast")
+
+if forecast_file is not None:
+    try:
+        df = pd.read_csv(forecast_file)
+        df.columns = df.columns.str.strip()
+        df["Date"] = pd.to_datetime(df["Date"])
+
+        # Show uploaded data
+        st.subheader("Uploaded Sales Data")
+        st.dataframe(df)
+
+        # Prepare for Prophet
+        df_prophet = df[["Date", "Units_Sold"]].rename(columns={"Date": "ds", "Units_Sold": "y"})
+
+        model = Prophet()
+        model.fit(df_prophet)
+
+        # Create future dataframe
+        future = model.make_future_dataframe(periods=15)
+        forecast = model.predict(future)
+
+        # Plot forecast
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=forecast['ds'], y=forecast['yhat'], name="Forecast"))
+        fig.add_trace(go.Scatter(x=df_prophet['ds'], y=df_prophet['y'], name="Actual"))
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Metrics
+        st.subheader("📊 Forecast Summary")
+        st.metric("Forecasted Total Units (Next 15 Days)", int(forecast['yhat'][-15:].sum()))
+
+    except Exception as e:
+        st.error(f"Error in forecasting: {e}")
