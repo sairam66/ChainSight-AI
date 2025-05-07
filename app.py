@@ -115,3 +115,6 @@ if uploaded_file is not None:
                         st.plotly_chart(fig, use_container_width=True)
 
                         st.metric("Forecasted Total Units (Next 15 Days)", int(forecast.sum()))
+                    except Exception as e:
+                         st.error(f"Forecasting failed: {e}")
+                    
